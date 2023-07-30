@@ -4,10 +4,10 @@ jobs:
     docker:
       # specify the version you desire here
       - image: circleci/openjdk:11-jdk
-    working_directory: .
+    working_directory: /tmp/workspace
     steps:
       - checkout
-      - run: mkdir -p .
+      - run: mkdir -p /tmp/workspace
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -21,17 +21,17 @@ jobs:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
       - persist_to_workspace:
-          root: .
+          root: /tmp/workspace
           paths: .
   docker-image-and-publish:
     machine: true
     steps:
       - attach_workspace:
-          at: .
-      - run: ls -a .
+          at: /tmp/workspace
+      - run: ls -a /tmp/workspace
       - run:
           name: Create Docker image and push to ECR
-          command: aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 811372474443.dkr.ecr.eu-central-1.amazonaws.com && docker build -t ticketing-app . && docker tag ticketing-app:latest 811372474443.dkr.ecr.eu-central-1.amazonaws.com/ticketing-app:latest && docker push 811372474443.dkr.ecr.eu-central-1.amazonaws.com/ticketing-app:latest
+          command: aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 811372474443.dkr.ecr.eu-central-1.amazonaws.com && docker build -t ticketing-app /tmp/workspace && docker tag ticketing-app:latest 811372474443.dkr.ecr.eu-central-1.amazonaws.com/ticketing-app:latest && docker push 811372474443.dkr.ecr.eu-central-1.amazonaws.com/ticketing-app:latest
   deploy-job:
     docker:
       #specify the version you desire here
@@ -40,7 +40,7 @@ jobs:
       - run:
           name: Execute Deployment Script
           command: |
-            ssh -o "StrictHostKeyChecking=no" ec2-user@ec2-3-72-87-141.eu-central-1.compute.amazonaws.com << 'ENDSSH'
+            ssh -o "StrictHostKeyChecking=no" ec2-user@ec2-3-72-87-141.eu-central-1.compute.amazonaws.com <<'ENDSSH'
             /bin/bash bin/deploy_image.sh
             docker ps
 workflows:
