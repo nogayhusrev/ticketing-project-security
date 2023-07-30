@@ -29,6 +29,7 @@ jobs:
       - attach_workspace:
           at: /tmp/workspace
       - run: ls -a /tmp/workspace
+      - run: sudo su
       - run:
           name: Create Docker image and push to ECR
           command: aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 811372474443.dkr.ecr.eu-central-1.amazonaws.com && docker build -t ticketing-app /tmp/workspace && docker tag ticketing-app:latest 811372474443.dkr.ecr.eu-central-1.amazonaws.com/ticketing-app:latest && docker push 811372474443.dkr.ecr.eu-central-1.amazonaws.com/ticketing-app:latest
