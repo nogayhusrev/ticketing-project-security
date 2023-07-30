@@ -30,43 +30,6 @@ jobs:
           at: /tmp/workspace
       - run: ls -a /tmp/workspace
       - run:
-          name: Set AWS Credentials from Secrets
-          command: |
-            # Retrieve AWS Access Key ID from AWS Secret Manager
-            export AWS_ACCESS_KEY_ID=$(aws secretsmanager get-secret-value --secret-id $AWS_ACCESS_KEY_ID_SECRET --query SecretString --output text | jq -r '.AWS_ACCESS_KEY_ID')
-            
-            # Retrieve AWS Secret Access Key from AWS Secret Manager
-            export AWS_SECRET_ACCESS_KEY=$(aws secretsmanager get-secret-value --secret-id $AWS_SECRET_ACCESS_KEY_SECRET --query SecretString --output text | jq -r '.AWS_SECRET_ACCESS_KEY')
-            
-            # Verify if the environment variables are set correctly
-            echo "AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID"
-            echo "AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY"
-            
-            # Check for a running container & stop it before starting a new one
-            docker stop ticketing-app || true
-            docker rm ticketing-app || true
-            
-            # Configure AWS CLI region
-            aws configure set default.region eu-central-1
-            
-            # Build the Docker image
-            docker build -t ticketing-app /tmp/workspace
-            
-            # Tag the image for ECR
-            docker tag ticketing-app:latest 811372474443.dkr.ecr.eu-central-1.amazonaws.com/ticketing-app:latest
-            
-            # Authenticate Docker with ECR
-            aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 811372474443.dkr.ecr.eu-central-1.amazonaws.com
-            
-            # Push the image to ECR
-            docker push 811372474443.dkr.ecr.eu-central-1.amazonaws.com/ticketing-app:latest
-            
-            # Clean up old docker images (if needed)
-            docker images | grep ticketing-app | grep none | awk '{print $3}' | xargs -r docker rmi
-          
-
-          # Add more steps if needed for your build process
-      - run:
           name: Create Docker image and push to ECR
           command: aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 811372474443.dkr.ecr.eu-central-1.amazonaws.com && docker build -t ticketing-app /tmp/workspace && docker tag ticketing-app:latest 811372474443.dkr.ecr.eu-central-1.amazonaws.com/ticketing-app:latest && docker push 811372474443.dkr.ecr.eu-central-1.amazonaws.com/ticketing-app:latest
   deploy-job:
