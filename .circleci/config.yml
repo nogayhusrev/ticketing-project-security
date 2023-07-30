@@ -30,6 +30,38 @@ jobs:
           at: /tmp/workspace
       - run: ls -a /tmp/workspace
       - run:
+          name: Build and Push Docker Image to ECR
+          command: |
+            # Here's your script
+            # Place the script content below this line
+            # ---------------------------
+            #!/bin/bash
+            
+            # Check for a running container & stop it before starting a new one
+            docker stop ticketing-app || true
+            docker rm ticketing-app || true
+            
+            # Assuming you have AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables set in CircleCI
+            # Configure AWS CLI region
+            aws configure set aws_access_key_id AKIAUGTRDLZE4SXTSCXZ 
+            aws configure set aws_secret_access_key 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
+            aws configure set default.region eu-central-1
+            
+            # Build the Docker image
+            docker build -t ticketing-app /tmp/workspace
+            
+            # Tag the image for ECR
+            docker tag ticketing-app:latest 811372474443.dkr.ecr.eu-central-1.amazonaws.com/ticketing-app:latest
+            
+            # Push the image to ECR
+            docker push 811372474443.dkr.ecr.eu-central-1.amazonaws.com/ticketing-app:latest
+            
+            # Clean up old docker images (if needed)
+            docker images | grep ticketing-app | grep none | awk '{print $3}' | xargs -r docker rmi
+            # ---------------------------
+
+          # Add more steps if needed for your build process
+      - run:
           name: Create Docker image and push to ECR
           command: aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 811372474443.dkr.ecr.eu-central-1.amazonaws.com && docker build -t ticketing-app /tmp/workspace && docker tag ticketing-app:latest 811372474443.dkr.ecr.eu-central-1.amazonaws.com/ticketing-app:latest && docker push 811372474443.dkr.ecr.eu-central-1.amazonaws.com/ticketing-app:latest
   deploy-job:
