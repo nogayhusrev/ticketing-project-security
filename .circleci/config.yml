@@ -31,7 +31,7 @@ jobs:
       - run: ls -a /tmp/workspace
       - run:
           name: Create Docker image and push to ECR
-          command: aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 811372474443.dkr.ecr.eu-north-1.amazonaws.com && docker build -t ticketingapp /tmp/workspace && docker tag ticketingapp:latest 811372474443.dkr.ecr.eu-north-1.amazonaws.com/ticketingapp:latest && docker push 811372474443.dkr.ecr.eu-north-1.amazonaws.com/ticketingapp:latest
+          command: aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 269733570982.dkr.ecr.eu-central-1.amazonaws.com && docker build -t ticketingapp /tmp/workspace && docker tag ticketingapp:latest 269733570982.dkr.ecr.eu-west-2.amazonaws.com/ticketingapp:latest && docker push 269733570982.dkr.ecr.eu-west-2.amazonaws.com/ticketingapp:latest
   deploy-job:
     docker:
       #specify the version you desire here
@@ -40,7 +40,7 @@ jobs:
       - run:
           name: Execute Deployment Script
           command: |
-            ssh -o "StrictHostKeyChecking=no" ec2-user@ec2-13-50-252-94.eu-north-1.compute.amazonaws.com <<'ENDSSH'
+            ssh -o "StrictHostKeyChecking=no" ec2-user@ec2-3-8-95-70.eu-west-2.compute.amazonaws.com <<'ENDSSH'
             /bin/bash bin/deploy_image.sh
             docker ps
 workflows:
